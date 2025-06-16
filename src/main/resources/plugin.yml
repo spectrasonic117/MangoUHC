@@ -1,0 +1,5 @@
+name: MangoUHC
+version: '${version}'
+main: com.spectrasonic.MangoUHC.Main
+api-version: '1.21'
+authors: [Spectrasonic]
