@@ -3,3 +3,25 @@ version: '${version}'
 main: com.spectrasonic.MangoUHC.Main
 api-version: '1.21'
 authors: [Spectrasonic]
+commands:
+  timer:
+    description: Timer command
+    usage: /<command> <create|add|pause|stop>
+    permission: timer.use
+
+permissions:
+  timer.use:
+    description: Basic timer permission
+    default: op
+  timer.create:
+    description: Permission to create timers
+    default: op
+  timer.add:
+    description: Permission to add time to timers
+    default: op
+  timer.pause:
+    description: Permission to pause timers
+    default: op
+  timer.stop:
+    description: Permission to stop timers
+    default: op
