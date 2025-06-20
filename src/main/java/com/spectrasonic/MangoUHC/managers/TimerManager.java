@@ -3,6 +3,7 @@ package com.spectrasonic.MangoUHC.managers;
 import com.spectrasonic.MangoUHC.Main;
 import com.spectrasonic.Utils.ColorConverter;
 import com.spectrasonic.Utils.SoundUtils;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -13,6 +14,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,144 +25,337 @@ public class TimerManager {
 
     private final Main plugin;
     private final MiniMessage miniMessage;
-    private BossBar currentBossBar;
-    private BukkitTask timerTask;
-    private AtomicInteger remainingSeconds;
-    private AtomicBoolean isPaused;
-    private String timerMessage;
-
-    {
-        this.remainingSeconds = new AtomicInteger(0);
-        this.isPaused = new AtomicBoolean(false);
+    private final Random random = new Random();
+    
+    // Mapa para almacenar múltiples timers por ID
+    @Getter
+    private final Map<String, TimerData> timers = new ConcurrentHashMap<>();
+    
+    /**
+     * Clase interna para almacenar los datos de cada timer
+     */
+    public class TimerData {
+        private final String id;
+        private final BossBar bossBar;
+        private final BukkitTask task;
+        private final AtomicInteger remainingSeconds;
+        private final AtomicBoolean isPaused;
+        private final String message;
+        
+        public TimerData(String id, BossBar bossBar, BukkitTask task, int seconds, String message) {
+            this.id = id;
+            this.bossBar = bossBar;
+            this.task = task;
+            this.remainingSeconds = new AtomicInteger(seconds);
+            this.isPaused = new AtomicBoolean(false);
+            this.message = message;
+        }
+        
+        public String getId() {
+            return id;
+        }
+        
+        public BossBar getBossBar() {
+            return bossBar;
+        }
+        
+        public BukkitTask getTask() {
+            return task;
+        }
+        
+        public AtomicInteger getRemainingSeconds() {
+            return remainingSeconds;
+        }
+        
+        public AtomicBoolean getIsPaused() {
+            return isPaused;
+        }
+        
+        public String getMessage() {
+            return message;
+        }
+        
+        public int getOriginalTime() {
+            return remainingSeconds.get();
+        }
     }
 
-    public void createTimer(int totalSeconds, BossBar.Color color, String message) {
-        stopTimer();
-
-        this.remainingSeconds.set(totalSeconds);
-        this.timerMessage = message;
-        this.isPaused.set(false);
-
-        this.currentBossBar = BossBar.bossBar(
+    /**
+     * Genera un ID aleatorio de 5 caracteres alfanuméricos
+     * @return ID aleatorio
+     */
+    public String generateRandomId() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder id = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            id.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        
+        // Asegurarse de que el ID sea único
+        if (timers.containsKey(id.toString())) {
+            return generateRandomId();
+        }
+        
+        return id.toString();
+    }
+    
+    /**
+     * Crea un nuevo timer con un ID generado automáticamente
+     * @param totalSeconds Duración total en segundos
+     * @param color Color del BossBar
+     * @param message Mensaje a mostrar
+     * @return ID del timer creado
+     */
+    public String createTimer(int totalSeconds, BossBar.Color color, String message) {
+        String timerId = generateRandomId();
+        return createTimerWithId(timerId, totalSeconds, color, message);
+    }
+    
+    /**
+     * Crea un nuevo timer con un ID específico
+     * @param timerId ID del timer
+     * @param totalSeconds Duración total en segundos
+     * @param color Color del BossBar
+     * @param message Mensaje a mostrar
+     * @return ID del timer creado
+     */
+    public String createTimerWithId(String timerId, int totalSeconds, BossBar.Color color, String message) {
+        // Crear el BossBar
+        BossBar bossBar = BossBar.bossBar(
                 miniMessage.deserialize(formatTimerDisplay(message, totalSeconds)),
                 1.0f,
                 color,
                 BossBar.Overlay.PROGRESS
         );
-
+        
+        // Mostrar el BossBar a todos los jugadores
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.showBossBar(currentBossBar);
+            player.showBossBar(bossBar);
         }
-
-        startTimerTask();
+        
+        // Iniciar la tarea del timer
+        BukkitTask task = startTimerTask(timerId, bossBar, totalSeconds, message);
+        
+        // Almacenar los datos del timer
+        timers.put(timerId, new TimerData(timerId, bossBar, task, totalSeconds, message));
+        
+        return timerId;
     }
 
 
-    public void addTime(int secondsToAdd) {
-        if (currentBossBar == null) {
-            return;
+    /**
+     * Añade tiempo a un timer específico
+     * @param timerId ID del timer
+     * @param secondsToAdd Segundos a añadir
+     * @return true si se añadió el tiempo correctamente, false si el timer no existe
+     */
+    public boolean addTime(String timerId, int secondsToAdd) {
+        TimerData timer = timers.get(timerId);
+        if (timer == null) {
+            return false;
         }
 
-        int newTotal = remainingSeconds.addAndGet(secondsToAdd);
-        updateBossBar();
+        timer.getRemainingSeconds().addAndGet(secondsToAdd);
+        updateBossBar(timerId);
+        return true;
     }
 
 
-    public void pauseTimer() {
-        if (currentBossBar == null) {
-            return;
+    /**
+     * Pausa un timer específico
+     * @param timerId ID del timer
+     * @return true si se pausó correctamente, false si el timer no existe o ya está pausado
+     */
+    public boolean pauseTimer(String timerId) {
+        TimerData timer = timers.get(timerId);
+        if (timer == null || timer.getIsPaused().get()) {
+            return false;
         }
 
-        isPaused.set(true);
+        timer.getIsPaused().set(true);
+        return true;
     }
 
-    public void resumeTimer() {
-        if (currentBossBar == null) {
-            return;
+    /**
+     * Reanuda un timer específico
+     * @param timerId ID del timer
+     * @return true si se reanudó correctamente, false si el timer no existe o ya está en ejecución
+     */
+    public boolean resumeTimer(String timerId) {
+        TimerData timer = timers.get(timerId);
+        if (timer == null || !timer.getIsPaused().get()) {
+            return false;
         }
 
-        isPaused.set(false);
+        timer.getIsPaused().set(false);
+        return true;
     }
 
 
-    public void stopTimer() {
-        if (timerTask != null) {
-            timerTask.cancel();
-            timerTask = null;
+    /**
+     * Detiene y elimina un timer específico
+     * @param timerId ID del timer
+     * @return true si se detuvo correctamente, false si el timer no existe
+     */
+    public boolean stopTimer(String timerId) {
+        TimerData timer = timers.get(timerId);
+        if (timer == null) {
+            return false;
         }
 
-        if (currentBossBar != null) {
+        // Cancelar la tarea
+        if (timer.getTask() != null) {
+            timer.getTask().cancel();
+        }
+
+        // Ocultar el BossBar
+        if (timer.getBossBar() != null) {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                player.hideBossBar(currentBossBar);
+                player.hideBossBar(timer.getBossBar());
             }
-            currentBossBar = null;
         }
 
-        remainingSeconds.set(0);
-        isPaused.set(false);
+        // Eliminar el timer del mapa
+        timers.remove(timerId);
+        return true;
+    }
+    
+    /**
+     * Detiene y elimina todos los timers activos
+     */
+    public void stopAllTimers() {
+        for (String timerId : new ArrayList<>(timers.keySet())) {
+            stopTimer(timerId);
+        }
     }
 
 
-    public boolean hasActiveTimer() {
-        return currentBossBar != null;
+    /**
+     * Verifica si existe un timer con el ID especificado
+     * @param timerId ID del timer
+     * @return true si existe, false en caso contrario
+     */
+    public boolean hasTimer(String timerId) {
+        return timers.containsKey(timerId);
+    }
+    
+    /**
+     * Verifica si hay algún timer activo
+     * @return true si hay al menos un timer activo, false en caso contrario
+     */
+    public boolean hasActiveTimers() {
+        return !timers.isEmpty();
     }
 
-    public boolean isPaused() {
-        return isPaused.get();
+    /**
+     * Verifica si un timer específico está pausado
+     * @param timerId ID del timer
+     * @return true si está pausado, false si no está pausado o no existe
+     */
+    public boolean isPaused(String timerId) {
+        TimerData timer = timers.get(timerId);
+        return timer != null && timer.getIsPaused().get();
+    }
+    
+    /**
+     * Obtiene una lista de IDs de todos los timers activos
+     * @return Lista de IDs de timers
+     */
+    public List<String> getActiveTimerIds() {
+        return new ArrayList<>(timers.keySet());
+    }
+    
+    /**
+     * Muestra todos los timers activos a un jugador específico
+     * @param player Jugador al que mostrar los timers
+     */
+    public void showAllTimersToPlayer(Player player) {
+        if (player == null || timers.isEmpty()) {
+            return;
+        }
+        
+        for (TimerData timer : timers.values()) {
+            player.showBossBar(timer.getBossBar());
+        }
     }
 
-    private void startTimerTask() {
-        timerTask = new BukkitRunnable() {
+    /**
+     * Inicia la tarea del timer
+     * @param timerId ID del timer
+     * @param bossBar BossBar asociado al timer
+     * @param totalSeconds Duración total en segundos
+     * @param message Mensaje a mostrar
+     * @return Tarea creada
+     */
+    private BukkitTask startTimerTask(String timerId, BossBar bossBar, int totalSeconds, String message) {
+        return new BukkitRunnable() {
             @Override
             public void run() {
-                if (isPaused.get()) {
+                TimerData timer = timers.get(timerId);
+                if (timer == null) {
+                    cancel();
+                    return;
+                }
+                
+                if (timer.getIsPaused().get()) {
                     return;
                 }
 
-                int current = remainingSeconds.get();
+                int current = timer.getRemainingSeconds().get();
 
                 if (current <= 0) {
-                    showFinishedMessage();
+                    showFinishedMessage(timerId);
                     cancel();
                     return;
                 }
 
-                remainingSeconds.decrementAndGet();
-                updateBossBar();
+                timer.getRemainingSeconds().decrementAndGet();
+                updateBossBar(timerId);
             }
         }.runTaskTimer(plugin, 20L, 20L); // Run every second
     }
 
-    private void updateBossBar() {
-        if (currentBossBar == null) {
+    /**
+     * Actualiza el BossBar de un timer específico
+     * @param timerId ID del timer
+     */
+    private void updateBossBar(String timerId) {
+        TimerData timer = timers.get(timerId);
+        if (timer == null) {
             return;
         }
 
-        int current = remainingSeconds.get();
-        int originalTime = getOriginalTime();
+        int current = timer.getRemainingSeconds().get();
+        int originalTime = timer.getOriginalTime();
 
         float progress = originalTime > 0 ? (float) current / originalTime : 0.0f;
-        currentBossBar.progress(Math.max(0.0f, Math.min(1.0f, progress)));
+        timer.getBossBar().progress(Math.max(0.0f, Math.min(1.0f, progress)));
 
         // Usar miniMessage para deserializar el texto con formato
-        Component title = miniMessage.deserialize(formatTimerDisplay(timerMessage, current));
-        currentBossBar.name(title);
+        Component title = miniMessage.deserialize(formatTimerDisplay(timer.getMessage(), current));
+        timer.getBossBar().name(title);
     }
 
-    private void showFinishedMessage() {
-        if (currentBossBar == null) {
+    /**
+     * Muestra el mensaje de finalización para un timer específico
+     * @param timerId ID del timer
+     */
+    private void showFinishedMessage(String timerId) {
+        TimerData timer = timers.get(timerId);
+        if (timer == null) {
             return;
         }
 
-        currentBossBar.name(miniMessage.deserialize(ColorConverter.convertToMiniMessage("&cTiempo Terminado")));
-        currentBossBar.progress(0.0f);
-        currentBossBar.color(BossBar.Color.RED);
+        timer.getBossBar().name(miniMessage.deserialize(ColorConverter.convertToMiniMessage("&cTiempo Terminado")));
+        timer.getBossBar().progress(0.0f);
+        timer.getBossBar().color(BossBar.Color.RED);
         SoundUtils.broadcastPlayerSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
 
+        final String finalTimerId = timerId;
         new BukkitRunnable() {
             @Override
             public void run() {
-                stopTimer();
+                stopTimer(finalTimerId);
             }
         }.runTaskLater(plugin, 100L); // 5 seconds = 100 ticks
     }
@@ -178,11 +374,10 @@ public class TimerManager {
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
-    private int getOriginalTime() {
-        return remainingSeconds.get();
-    }
-
+    /**
+     * Limpia todos los recursos al desactivar el plugin
+     */
     public void cleanup() {
-        stopTimer();
+        stopAllTimers();
     }
 }

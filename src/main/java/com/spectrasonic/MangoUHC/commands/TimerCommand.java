@@ -8,6 +8,8 @@ import net.kyori.adventure.bossbar.BossBar;
 import org.bukkit.command.CommandSender;
 import com.spectrasonic.Utils.MessageUtils;
 
+import java.util.List;
+
 @CommandAlias("timer")
 public class TimerCommand extends BaseCommand {
 
@@ -23,15 +25,9 @@ public class TimerCommand extends BaseCommand {
     @Description("Creates a new timer with specified duration, color and message")
     @CommandCompletion("@time-examples @bossbar-colors _")
     public void onCreateTimer(CommandSender sender, String timeString, @Values("@bossbar-colors") String colorString, String... messageArgs) {
-        if (plugin.getTimerManager().hasActiveTimer()) {
-            MessageUtils.sendMessage(sender, "<red>A timer is already active! Use /timer stop to remove it first.");
-            return;
-        }
-
         int totalSeconds = TimeParser.parseTime(timeString);
         if (totalSeconds <= 0) {
-            MessageUtils.sendMessage(sender, "<red>Invalid time format! Use format like: 1h30m15s, 45m, 30s");
-
+            MessageUtils.sendMessage(sender, "<red>Formato de tiempo inválido! Usa un formato como: 1h30m15s, 45m, 30s");
             return;
         }
 
@@ -39,106 +35,155 @@ public class TimerCommand extends BaseCommand {
         try {
             color = BossBar.Color.valueOf(colorString.toUpperCase());
         } catch (IllegalArgumentException e) {
-            MessageUtils.sendMessage(sender, "<red>Invalid color! Available colors: BLUE, GREEN, PINK, PURPLE, RED, WHITE, YELLOW");
+            MessageUtils.sendMessage(sender, "<red>Color inválido! Colores disponibles: BLUE, GREEN, PINK, PURPLE, RED, WHITE, YELLOW");
             return;
         }
 
         // Join message parts
         String message = String.join(" ", messageArgs);
         if (message.trim().isEmpty()) {
-            MessageUtils.sendMessage(sender, "<red>Message cannot be empty!");
+            MessageUtils.sendMessage(sender, "<red>El mensaje no puede estar vacío!");
             return;
         }
 
-        // Create timer
-        plugin.getTimerManager().createTimer(totalSeconds, color, message);
-        MessageUtils.sendMessage(sender, "<green>Timer created successfully!");
+        // Create timer with random ID
+        String timerId = plugin.getTimerManager().createTimer(totalSeconds, color, message);
+        MessageUtils.sendMessage(sender, "<green>Timer creado con éxito! ID: <gold>" + timerId);
     }
 
     /**
-     * Adds time to the current timer
-     * Usage: /timer add 5m30s
+     * Adds time to a specific timer
+     * Usage: /timer add <id> 5m30s
      */
     @Subcommand("add")
     @CommandPermission("timer.add")
-    @Syntax("<time>")
-    @Description("Adds time to the current timer")
-    @CommandCompletion("@time-examples")
-    public void onAddTime(CommandSender sender, String timeString) {
-        if (!plugin.getTimerManager().hasActiveTimer()) {
-            MessageUtils.sendMessage(sender, "<red>No active timer found!");
+    @Syntax("<timer_id> <time>")
+    @Description("Adds time to a specific timer")
+    @CommandCompletion("@timers @time-examples")
+    public void onAddTime(CommandSender sender, String timerId, String timeString) {
+        if (!plugin.getTimerManager().hasTimer(timerId)) {
+            MessageUtils.sendMessage(sender, "<red>No se encontró un timer con ID: <gold>" + timerId);
             return;
         }
 
         int secondsToAdd = TimeParser.parseTime(timeString);
         if (secondsToAdd <= 0) {
-            MessageUtils.sendMessage(sender, "<red>Invalid time format! Use format like: 1h30m15s, 45m, 30s");
+            MessageUtils.sendMessage(sender, "<red>Formato de tiempo inválido! Usa un formato como: 1h30m15s, 45m, 30s");
             return;
         }
 
-        plugin.getTimerManager().addTime(secondsToAdd);
-        MessageUtils.sendMessage(sender, "<green>Added " + TimeParser.formatTime(secondsToAdd) + " to the timer!");
+        plugin.getTimerManager().addTime(timerId, secondsToAdd);
+        MessageUtils.sendMessage(sender, "<green>Añadidos " + TimeParser.formatTime(secondsToAdd) + " al timer <gold>" + timerId);
     }
 
     /**
-     * Pauses the current timer
-     * Usage: /timer pause
+     * Pauses a specific timer
+     * Usage: /timer pause <id>
      */
     @Subcommand("pause")
     @CommandPermission("timer.pause")
-    @Description("Pauses the current timer")
-    public void onPauseTimer(CommandSender sender) {
-        if (!plugin.getTimerManager().hasActiveTimer()) {
-            MessageUtils.sendMessage(sender, "<red>No active timer found!");
+    @Syntax("<timer_id>")
+    @Description("Pauses a specific timer")
+    @CommandCompletion("@timers")
+    public void onPauseTimer(CommandSender sender, String timerId) {
+        if (!plugin.getTimerManager().hasTimer(timerId)) {
+            MessageUtils.sendMessage(sender, "<red>No se encontró un timer con ID: <gold>" + timerId);
             return;
         }
 
-        if (plugin.getTimerManager().isPaused()) {
-            MessageUtils.sendMessage(sender, "<red>Timer is already paused!");
+        if (plugin.getTimerManager().isPaused(timerId)) {
+            MessageUtils.sendMessage(sender, "<red>El timer <gold>" + timerId + " <red>ya está pausado!");
             return;
         }
 
-        plugin.getTimerManager().pauseTimer();
-        MessageUtils.sendMessage(sender, "<green>Timer paused!");
+        plugin.getTimerManager().pauseTimer(timerId);
+        MessageUtils.sendMessage(sender, "<green>Timer <gold>" + timerId + " <green>pausado!");
     }
 
     /**
-     * Resumes the current timer
-     * Usage: /timer resume
+     * Resumes a specific timer
+     * Usage: /timer resume <id>
      */
     @Subcommand("resume")
     @CommandPermission("timer.pause")
-    @Description("Resumes the current timer")
-    public void onResumeTimer(CommandSender sender) {
-        if (!plugin.getTimerManager().hasActiveTimer()) {
-            MessageUtils.sendMessage(sender, "<red>No active timer found!");
+    @Syntax("<timer_id>")
+    @Description("Resumes a specific timer")
+    @CommandCompletion("@timers")
+    public void onResumeTimer(CommandSender sender, String timerId) {
+        if (!plugin.getTimerManager().hasTimer(timerId)) {
+            MessageUtils.sendMessage(sender, "<red>No se encontró un timer con ID: <gold>" + timerId);
             return;
         }
 
-        if (!plugin.getTimerManager().isPaused()) {
-            MessageUtils.sendMessage(sender, "<red>Timer is already running!");
+        if (!plugin.getTimerManager().isPaused(timerId)) {
+            MessageUtils.sendMessage(sender, "<red>El timer <gold>" + timerId + " <red>ya está en ejecución!");
             return;
         }
 
-        plugin.getTimerManager().resumeTimer();
-        MessageUtils.sendMessage(sender, "<green>Timer resumed!");
+        plugin.getTimerManager().resumeTimer(timerId);
+        MessageUtils.sendMessage(sender, "<green>Timer <gold>" + timerId + " <green>reanudado!");
     }
 
     /**
-     * Stops and removes the current timer
-     * Usage: /timer stop
+     * Stops and removes a specific timer
+     * Usage: /timer stop <id>
      */
     @Subcommand("stop")
     @CommandPermission("timer.stop")
-    @Description("Stops and removes the current timer")
-    public void onStopTimer(CommandSender sender) {
-        if (!plugin.getTimerManager().hasActiveTimer()) {
-            MessageUtils.sendMessage(sender, "<red>No active timer found!");
+    @Syntax("<timer_id>")
+    @Description("Stops and removes a specific timer")
+    @CommandCompletion("@timers")
+    public void onStopTimer(CommandSender sender, String timerId) {
+        if (!plugin.getTimerManager().hasTimer(timerId)) {
+            MessageUtils.sendMessage(sender, "<red>No se encontró un timer con ID: <gold>" + timerId);
             return;
         }
 
-        plugin.getTimerManager().stopTimer();
-        MessageUtils.sendMessage(sender, "<green>Timer stopped!");
+        plugin.getTimerManager().stopTimer(timerId);
+        MessageUtils.sendMessage(sender, "<green>Timer <gold>" + timerId + " <green>detenido!");
+    }
+    
+    /**
+     * Lists all active timers
+     * Usage: /timer list
+     */
+    @Subcommand("list")
+    @CommandPermission("timer.list")
+    @Description("Lists all active timers")
+    public void onListTimers(CommandSender sender) {
+        List<String> timerIds = plugin.getTimerManager().getActiveTimerIds();
+        
+        if (timerIds.isEmpty()) {
+            MessageUtils.sendMessage(sender, "<red>No hay timers activos!");
+            return;
+        }
+        
+        MessageUtils.sendMessage(sender, "<green>Timers activos: <gray>(" + timerIds.size() + ")");
+        for (String id : timerIds) {
+            boolean isPaused = plugin.getTimerManager().isPaused(id);
+            String status = isPaused ? "<red>(Pausado)</red>" : "<green>(Activo)</green>";
+            MessageUtils.sendMessage(sender, "<gray>- <gold>" + id + " " + status);
+        }
+    }
+    
+    /**
+     * Stops all active timers
+     * Usage: /timer stopall
+     */
+    @Subcommand("stopall")
+    @CommandPermission("timer.stopall")
+    @Description("Stops all active timers")
+    public void onStopAllTimers(CommandSender sender) {
+        List<String> timerIds = plugin.getTimerManager().getActiveTimerIds();
+        
+        if (timerIds.isEmpty()) {
+            MessageUtils.sendMessage(sender, "<red>No hay timers activos!");
+            return;
+        }
+        
+        int count = timerIds.size();
+        plugin.getTimerManager().stopAllTimers();
+        MessageUtils.sendMessage(sender, "<green>Se detuvieron " + count + " timers!");
     }
 
 }

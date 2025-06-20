@@ -29,7 +29,7 @@ public class CommandManager {
         );
 
         List<String> actions = Arrays.asList(
-            "create", "add", "pause", "resume", "stop"
+            "create", "add", "pause", "resume", "stop", "list", "stopall"
         );
         
         List<String> timeExamples = Arrays.asList(
@@ -39,5 +39,10 @@ public class CommandManager {
         commandManager.getCommandCompletions().registerStaticCompletion("bossbar-colors", colors);
         commandManager.getCommandCompletions().registerStaticCompletion("timer-actions", actions);
         commandManager.getCommandCompletions().registerStaticCompletion("time-examples", timeExamples);
+        
+        // Registro de completado dinámico para IDs de timers activos
+        commandManager.getCommandCompletions().registerAsyncCompletion("timers", context -> {
+            return plugin.getTimerManager().getActiveTimerIds();
+        });
     }
 }
