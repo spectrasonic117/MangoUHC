@@ -1,27 +1,28 @@
 name: MangoUHC
-version: '${version}'
+version: "${version}"
 main: com.spectrasonic.MangoUHC.Main
-api-version: '1.21'
+api-version: "1.21"
 authors: [Spectrasonic]
 commands:
-  timer:
-    description: Timer command
-    usage: /<command> <create|add|pause|stop>
-    permission: timer.use
+    mango:
+        permission: mangouhc.mango
+    timer:
+        permission: timer.use
 
 permissions:
-  timer.use:
-    description: Basic timer permission
-    default: op
-  timer.create:
-    description: Permission to create timers
-    default: op
-  timer.add:
-    description: Permission to add time to timers
-    default: op
-  timer.pause:
-    description: Permission to pause timers
-    default: op
-  timer.stop:
-    description: Permission to stop timers
-    default: op
+    mangouhc.mango:
+        default: true
+    mangouhc.timer.*:
+        children:
+            mangouhc.timer.create:
+                default: op
+            mangouhc.timer.add:
+                default: op
+            mangouhc.timer.pause:
+                default: op
+            mangouhc.timer.stop:
+                default: op
+            mangouhc.timer.list:
+                default: op
+            mangouhc.timer.stopall:
+                default: op

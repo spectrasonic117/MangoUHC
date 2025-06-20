@@ -2,18 +2,17 @@ package com.spectrasonic.MangoUHC.managers;
 
 import co.aikar.commands.PaperCommandManager;
 import com.spectrasonic.MangoUHC.Main;
+import com.spectrasonic.MangoUHC.commands.MangoCommand;
 import com.spectrasonic.MangoUHC.commands.TimerCommand;
 import java.util.Arrays;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class CommandManager {
 
     private final Main plugin;
     private PaperCommandManager commandManager;
-
-    public CommandManager(Main plugin) {
-        this.plugin = plugin;
-    }
 
     public void registerCommands() {
         this.commandManager = new PaperCommandManager(plugin);
@@ -21,6 +20,7 @@ public class CommandManager {
         registerCompletions();
 
         commandManager.registerCommand(new TimerCommand(plugin));
+        commandManager.registerCommand(new MangoCommand(plugin));
     }
 
     private void registerCompletions() {

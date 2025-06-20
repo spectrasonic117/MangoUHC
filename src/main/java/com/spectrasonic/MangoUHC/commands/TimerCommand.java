@@ -7,20 +7,19 @@ import com.spectrasonic.MangoUHC.utils.TimeParser;
 import net.kyori.adventure.bossbar.BossBar;
 import org.bukkit.command.CommandSender;
 import com.spectrasonic.Utils.MessageUtils;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 @CommandAlias("timer")
+@CommandPermission("mangouhc.timer.*")
+@RequiredArgsConstructor
 public class TimerCommand extends BaseCommand {
 
     private final Main plugin;
 
-    public TimerCommand(Main plugin) {
-        this.plugin = plugin;
-    }
-
     @Subcommand("create")
-    @CommandPermission("timer.create")
+    @CommandPermission("mangouhc.timer.create")
     @Syntax("<time> <color> <message>")
     @Description("Creates a new timer with specified duration, color and message")
     @CommandCompletion("@time-examples @bossbar-colors _")
@@ -56,7 +55,7 @@ public class TimerCommand extends BaseCommand {
      * Usage: /timer add <id> 5m30s
      */
     @Subcommand("add")
-    @CommandPermission("timer.add")
+    @CommandPermission("mangouhc.timer.add")
     @Syntax("<timer_id> <time>")
     @Description("Adds time to a specific timer")
     @CommandCompletion("@timers @time-examples")
@@ -81,7 +80,7 @@ public class TimerCommand extends BaseCommand {
      * Usage: /timer pause <id>
      */
     @Subcommand("pause")
-    @CommandPermission("timer.pause")
+    @CommandPermission("mangouhc.timer.pause")
     @Syntax("<timer_id>")
     @Description("Pauses a specific timer")
     @CommandCompletion("@timers")
@@ -105,7 +104,7 @@ public class TimerCommand extends BaseCommand {
      * Usage: /timer resume <id>
      */
     @Subcommand("resume")
-    @CommandPermission("timer.pause")
+    @CommandPermission("mangouhc.timer.pause")
     @Syntax("<timer_id>")
     @Description("Resumes a specific timer")
     @CommandCompletion("@timers")
@@ -129,7 +128,7 @@ public class TimerCommand extends BaseCommand {
      * Usage: /timer stop <id>
      */
     @Subcommand("stop")
-    @CommandPermission("timer.stop")
+    @CommandPermission("mangouhc.timer.stop")
     @Syntax("<timer_id>")
     @Description("Stops and removes a specific timer")
     @CommandCompletion("@timers")
@@ -148,7 +147,7 @@ public class TimerCommand extends BaseCommand {
      * Usage: /timer list
      */
     @Subcommand("list")
-    @CommandPermission("timer.list")
+    @CommandPermission("mangouhc.timer.list")
     @Description("Lists all active timers")
     public void onListTimers(CommandSender sender) {
         List<String> timerIds = plugin.getTimerManager().getActiveTimerIds();
@@ -171,7 +170,7 @@ public class TimerCommand extends BaseCommand {
      * Usage: /timer stopall
      */
     @Subcommand("stopall")
-    @CommandPermission("timer.stopall")
+    @CommandPermission("mangouhc.timer.stopall")
     @Description("Stops all active timers")
     public void onStopAllTimers(CommandSender sender) {
         List<String> timerIds = plugin.getTimerManager().getActiveTimerIds();
