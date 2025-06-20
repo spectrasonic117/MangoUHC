@@ -21,6 +21,7 @@ public class TimerCommand extends BaseCommand {
     @CommandPermission("timer.create")
     @Syntax("<time> <color> <message>")
     @Description("Creates a new timer with specified duration, color and message")
+    @CommandCompletion("@time-examples @bossbar-colors _")
     public void onCreateTimer(CommandSender sender, String timeString, @Values("@bossbar-colors") String colorString, String... messageArgs) {
         if (plugin.getTimerManager().hasActiveTimer()) {
             MessageUtils.sendMessage(sender, "<red>A timer is already active! Use /timer stop to remove it first.");
@@ -62,6 +63,7 @@ public class TimerCommand extends BaseCommand {
     @CommandPermission("timer.add")
     @Syntax("<time>")
     @Description("Adds time to the current timer")
+    @CommandCompletion("@time-examples")
     public void onAddTime(CommandSender sender, String timeString) {
         if (!plugin.getTimerManager().hasActiveTimer()) {
             MessageUtils.sendMessage(sender, "<red>No active timer found!");
@@ -75,27 +77,51 @@ public class TimerCommand extends BaseCommand {
         }
 
         plugin.getTimerManager().addTime(secondsToAdd);
-        MessageUtils.sendMessage(sender, "<green>Added" + TimeParser.formatTime(secondsToAdd) + " to the timer!");
+        MessageUtils.sendMessage(sender, "<green>Added " + TimeParser.formatTime(secondsToAdd) + " to the timer!");
     }
 
     /**
-     * Pauses or resumes the current timer
+     * Pauses the current timer
      * Usage: /timer pause
      */
     @Subcommand("pause")
     @CommandPermission("timer.pause")
-    @Description("Pauses or resumes the current timer")
+    @Description("Pauses the current timer")
     public void onPauseTimer(CommandSender sender) {
         if (!plugin.getTimerManager().hasActiveTimer()) {
             MessageUtils.sendMessage(sender, "<red>No active timer found!");
             return;
         }
 
-        plugin.getTimerManager().pauseTimer();
-        boolean isPaused = plugin.getTimerManager().isPaused();
+        if (plugin.getTimerManager().isPaused()) {
+            MessageUtils.sendMessage(sender, "<red>Timer is already paused!");
+            return;
+        }
 
-        String action = isPaused ? "paused" : "resumed";
-        MessageUtils.sendMessage(sender, "<green>Timer " + action + "!");
+        plugin.getTimerManager().pauseTimer();
+        MessageUtils.sendMessage(sender, "<green>Timer paused!");
+    }
+
+    /**
+     * Resumes the current timer
+     * Usage: /timer resume
+     */
+    @Subcommand("resume")
+    @CommandPermission("timer.pause")
+    @Description("Resumes the current timer")
+    public void onResumeTimer(CommandSender sender) {
+        if (!plugin.getTimerManager().hasActiveTimer()) {
+            MessageUtils.sendMessage(sender, "<red>No active timer found!");
+            return;
+        }
+
+        if (!plugin.getTimerManager().isPaused()) {
+            MessageUtils.sendMessage(sender, "<red>Timer is already running!");
+            return;
+        }
+
+        plugin.getTimerManager().resumeTimer();
+        MessageUtils.sendMessage(sender, "<green>Timer resumed!");
     }
 
     /**
@@ -114,4 +140,5 @@ public class TimerCommand extends BaseCommand {
         plugin.getTimerManager().stopTimer();
         MessageUtils.sendMessage(sender, "<green>Timer stopped!");
     }
+
 }

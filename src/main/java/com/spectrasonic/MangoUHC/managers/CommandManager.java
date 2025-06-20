@@ -29,10 +29,15 @@ public class CommandManager {
         );
 
         List<String> actions = Arrays.asList(
-            "create", "add", "pause", "stop"
+            "create", "add", "pause", "resume", "stop"
+        );
+        
+        List<String> timeExamples = Arrays.asList(
+            "10s", "30s", "1m", "5m", "10m", "30m", "1h", "2h", "1h30m", "1h30m15s"
         );
 
         commandManager.getCommandCompletions().registerStaticCompletion("bossbar-colors", colors);
         commandManager.getCommandCompletions().registerStaticCompletion("timer-actions", actions);
+        commandManager.getCommandCompletions().registerStaticCompletion("time-examples", timeExamples);
     }
 }

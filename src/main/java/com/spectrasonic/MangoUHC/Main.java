@@ -33,6 +33,7 @@ public final class Main extends JavaPlugin {
 
         CommandUtils.setPlugin(this);
         MessageUtils.sendStartupMessage(this);
+        MessageUtils.sendVeiMessage(this);
 
     }
 

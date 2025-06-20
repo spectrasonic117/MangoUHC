@@ -1,6 +1,7 @@
 package com.spectrasonic.MangoUHC.managers;
 
 import com.spectrasonic.MangoUHC.Main;
+import com.spectrasonic.Utils.ColorConverter;
 import com.spectrasonic.Utils.SoundUtils;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.bossbar.BossBar;
@@ -28,7 +29,6 @@ public class TimerManager {
     private String timerMessage;
 
     {
-        this.miniMessage = MiniMessage.miniMessage();
         this.remainingSeconds = new AtomicInteger(0);
         this.isPaused = new AtomicBoolean(false);
     }
@@ -41,7 +41,7 @@ public class TimerManager {
         this.isPaused.set(false);
 
         this.currentBossBar = BossBar.bossBar(
-                Component.text(formatTimerDisplay(message, totalSeconds)),
+                miniMessage.deserialize(formatTimerDisplay(message, totalSeconds)),
                 1.0f,
                 color,
                 BossBar.Overlay.PROGRESS
@@ -70,7 +70,15 @@ public class TimerManager {
             return;
         }
 
-        isPaused.set(!isPaused.get());
+        isPaused.set(true);
+    }
+
+    public void resumeTimer() {
+        if (currentBossBar == null) {
+            return;
+        }
+
+        isPaused.set(false);
     }
 
 
@@ -133,7 +141,8 @@ public class TimerManager {
         float progress = originalTime > 0 ? (float) current / originalTime : 0.0f;
         currentBossBar.progress(Math.max(0.0f, Math.min(1.0f, progress)));
 
-        Component title = Component.text(formatTimerDisplay(timerMessage, current));
+        // Usar miniMessage para deserializar el texto con formato
+        Component title = miniMessage.deserialize(formatTimerDisplay(timerMessage, current));
         currentBossBar.name(title);
     }
 
@@ -142,7 +151,7 @@ public class TimerManager {
             return;
         }
 
-        currentBossBar.name(miniMessage.deserialize("<red>Tiempo Terminado</red>"));
+        currentBossBar.name(miniMessage.deserialize(ColorConverter.convertToMiniMessage("&cTiempo Terminado")));
         currentBossBar.progress(0.0f);
         currentBossBar.color(BossBar.Color.RED);
         SoundUtils.broadcastPlayerSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
@@ -157,7 +166,8 @@ public class TimerManager {
 
     private String formatTimerDisplay(String message, int seconds) {
         String timeFormat = formatTime(seconds);
-        return message + " " + timeFormat;
+        // Convertir códigos de color de Minecraft a formato MiniMessage
+        return ColorConverter.convertToMiniMessage(message + " " + timeFormat);
     }
 
     private String formatTime(int totalSeconds) {
