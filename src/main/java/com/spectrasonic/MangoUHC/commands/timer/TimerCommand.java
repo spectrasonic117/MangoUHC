@@ -1,4 +1,4 @@
-package com.spectrasonic.MangoUHC.commands;
+package com.spectrasonic.MangoUHC.commands.timer;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;

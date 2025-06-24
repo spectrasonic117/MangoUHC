@@ -3,7 +3,8 @@ package com.spectrasonic.MangoUHC.managers;
 import co.aikar.commands.PaperCommandManager;
 import com.spectrasonic.MangoUHC.Main;
 import com.spectrasonic.MangoUHC.commands.MangoCommand;
-import com.spectrasonic.MangoUHC.commands.TimerCommand;
+import com.spectrasonic.MangoUHC.commands.timer.TimerCommand;
+
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

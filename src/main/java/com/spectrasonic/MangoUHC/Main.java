@@ -7,9 +7,7 @@ import com.spectrasonic.MangoUHC.managers.TimerManager;
 import com.spectrasonic.Utils.CommandUtils;
 import com.spectrasonic.Utils.MessageUtils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-
 import lombok.Getter;
-
 import org.bukkit.plugin.java.JavaPlugin;
 
 @Getter
