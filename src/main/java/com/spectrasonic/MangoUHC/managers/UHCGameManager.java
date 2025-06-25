@@ -3,6 +3,8 @@ package com.spectrasonic.MangoUHC.managers;
 import com.spectrasonic.MangoUHC.Main;
 import com.spectrasonic.MangoUHC.enums.UHCState;
 import com.spectrasonic.Utils.MessageUtils;
+import com.spectrasonic.Utils.SoundUtils;
+import org.bukkit.Sound;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.World;
@@ -31,17 +33,35 @@ public class UHCGameManager {
         if (currentState == UHCState.RUNNING) {
             stopUHC();
         } else {
-            startUHC();
+            startingUHC();
         }
     }
 
-    private void startUHC() {
+    private void startUHCNow() {
         currentState = UHCState.RUNNING;
         MessageUtils.sendBroadcastMessage("<green>El UHC ha comenzado!");
         applyGameRules(true);
         setPvP(false); // Disable PVP at the start
         scatterPlayers();
         uhcTimerManager.startUHCTimers();
+    }
+
+    private void startingUHC() {
+        currentState = UHCState.STARTING;
+        MessageUtils.sendBroadcastMessage("<gold>El UHC comenzará en 15 segundos...");
+        // Schedule countdown from 10 to 1 starting at 5 seconds delay (15 - 10)
+        for (int i = 10; i >= 1; i--) {
+            final int count = i;
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                MessageUtils.broadcastTitle("<gold>" + count + "</gold>", "", 1, 2, 1);
+            }, 20L * (15 - count));
+        }
+        // After countdown, broadcast "¡COMIENZA!", play dragon growl sound, and start the game
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            MessageUtils.broadcastTitle("<green><b>¡COMIENZA</b>!</green>", "", 1, 3, 1);
+            SoundUtils.broadcastPlayerSound(Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.0f);
+            startUHCNow();
+        }, 20L * 15);
     }
 
     private void stopUHC() {

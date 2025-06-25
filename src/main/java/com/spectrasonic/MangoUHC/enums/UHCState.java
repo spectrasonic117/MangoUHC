@@ -2,5 +2,6 @@ package com.spectrasonic.MangoUHC.enums;
 
 public enum UHCState {
     RUNNING,
-    STOPPED
+    STOPPED,
+    STARTING
 }
