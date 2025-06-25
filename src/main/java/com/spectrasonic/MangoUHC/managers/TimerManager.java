@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.lang.Runnable;
 
 
 @RequiredArgsConstructor
@@ -41,16 +42,22 @@ public class TimerManager {
         private final AtomicInteger remainingSeconds;
         private final AtomicBoolean isPaused;
         private final String message;
-        
-        public TimerData(String id, BossBar bossBar, BukkitTask task, int seconds, String message) {
+        private final Runnable completionCallback;
+
+        public TimerData(String id, BossBar bossBar, BukkitTask task, int seconds, String message, Runnable completionCallback) {
             this.id = id;
             this.bossBar = bossBar;
             this.task = task;
             this.remainingSeconds = new AtomicInteger(seconds);
             this.isPaused = new AtomicBoolean(false);
             this.message = message;
+            this.completionCallback = completionCallback;
         }
-        
+
+        public Runnable getCompletionCallback() {
+            return completionCallback;
+        }
+
         public String getId() {
             return id;
         }
@@ -108,18 +115,32 @@ public class TimerManager {
      */
     public String createTimer(int totalSeconds, BossBar.Color color, String message) {
         String timerId = generateRandomId();
-        return createTimerWithId(timerId, totalSeconds, color, message);
+        return createTimerWithId(timerId, totalSeconds, color, message, null);
     }
-    
+
+    /**
+     * Crea un nuevo timer con un ID generado automáticamente y un callback de finalización
+     * @param totalSeconds Duración total en segundos
+     * @param color Color del BossBar
+     * @param message Mensaje a mostrar
+     * @param completionCallback Callback a ejecutar al finalizar el timer (puede ser null)
+     * @return ID del timer creado
+     */
+    public String createTimer(int totalSeconds, BossBar.Color color, String message, Runnable completionCallback) {
+        String timerId = generateRandomId();
+        return createTimerWithId(timerId, totalSeconds, color, message, completionCallback);
+    }
+
     /**
      * Crea un nuevo timer con un ID específico
      * @param timerId ID del timer
      * @param totalSeconds Duración total en segundos
      * @param color Color del BossBar
      * @param message Mensaje a mostrar
+     * @param completionCallback Callback a ejecutar al finalizar el timer (puede ser null)
      * @return ID del timer creado
      */
-    public String createTimerWithId(String timerId, int totalSeconds, BossBar.Color color, String message) {
+    public String createTimerWithId(String timerId, int totalSeconds, BossBar.Color color, String message, Runnable completionCallback) {
         // Crear el BossBar
         BossBar bossBar = BossBar.bossBar(
                 miniMessage.deserialize(formatTimerDisplay(message, totalSeconds)),
@@ -134,11 +155,11 @@ public class TimerManager {
         }
         
         // Iniciar la tarea del timer
-        BukkitTask task = startTimerTask(timerId, bossBar, totalSeconds, message);
-        
+        BukkitTask task = startTimerTask(timerId, bossBar, totalSeconds, message, completionCallback);
+
         // Almacenar los datos del timer
-        timers.put(timerId, new TimerData(timerId, bossBar, task, totalSeconds, message));
-        
+        timers.put(timerId, new TimerData(timerId, bossBar, task, totalSeconds, message, completionCallback));
+
         return timerId;
     }
 
@@ -285,9 +306,10 @@ public class TimerManager {
      * @param bossBar BossBar asociado al timer
      * @param totalSeconds Duración total en segundos
      * @param message Mensaje a mostrar
+     * @param completionCallback Callback a ejecutar al finalizar el timer (puede ser null)
      * @return Tarea creada
      */
-    private BukkitTask startTimerTask(String timerId, BossBar bossBar, int totalSeconds, String message) {
+    private BukkitTask startTimerTask(String timerId, BossBar bossBar, int totalSeconds, String message, Runnable completionCallback) {
         return new BukkitRunnable() {
             @Override
             public void run() {
@@ -305,6 +327,9 @@ public class TimerManager {
 
                 if (current <= 0) {
                     showFinishedMessage(timerId);
+                    if (completionCallback != null) {
+                        completionCallback.run();
+                    }
                     cancel();
                     return;
                 }

@@ -3,6 +3,7 @@ package com.spectrasonic.MangoUHC.managers;
 import co.aikar.commands.PaperCommandManager;
 import com.spectrasonic.MangoUHC.Main;
 import com.spectrasonic.MangoUHC.commands.MangoCommand;
+import com.spectrasonic.MangoUHC.commands.UHCCommand;
 import com.spectrasonic.MangoUHC.commands.timer.TimerCommand;
 
 import java.util.Arrays;
@@ -22,6 +23,7 @@ public class CommandManager {
 
         commandManager.registerCommand(new TimerCommand(plugin));
         commandManager.registerCommand(new MangoCommand(plugin));
+        commandManager.registerCommand(new UHCCommand(plugin.getUhcGameManager()));
     }
 
     private void registerCompletions() {

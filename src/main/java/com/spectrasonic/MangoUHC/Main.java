@@ -4,6 +4,8 @@ import com.spectrasonic.MangoUHC.managers.CommandManager;
 import com.spectrasonic.MangoUHC.managers.ConfigManager;
 import com.spectrasonic.MangoUHC.managers.EventManager;
 import com.spectrasonic.MangoUHC.managers.TimerManager;
+import com.spectrasonic.MangoUHC.managers.UHCGameManager;
+import com.spectrasonic.MangoUHC.managers.UHCTimerManager;
 import com.spectrasonic.Utils.CommandUtils;
 import com.spectrasonic.Utils.MessageUtils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -16,6 +18,8 @@ public final class Main extends JavaPlugin {
     private EventManager eventManager;
     private ConfigManager configManager;
     private TimerManager timerManager;
+    private UHCGameManager uhcGameManager;
+    private UHCTimerManager uhcTimerManager;
 
     @Override
     public void onEnable() {
@@ -23,6 +27,12 @@ public final class Main extends JavaPlugin {
         this.configManager = new ConfigManager(this);
         this.timerManager = new TimerManager(this, MiniMessage.miniMessage());
         this.eventManager = new EventManager(this);
+        // Create UHCGameManager first without UHCTimerManager
+        this.uhcGameManager = new UHCGameManager(this, null);
+        // Then create UHCTimerManager with UHCGameManager reference
+        this.uhcTimerManager = new UHCTimerManager(this, timerManager, uhcGameManager);
+        // Finally set the UHCTimerManager in UHCGameManager
+        uhcGameManager.setUhcTimerManager(uhcTimerManager);
         this.commandManager = new CommandManager(this);
 
         configManager.loadConfig();
@@ -45,4 +55,10 @@ public final class Main extends JavaPlugin {
         MessageUtils.sendShutdownMessage(this);
     }
 
+    public UHCGameManager getUhcGameManager() {
+        return uhcGameManager;
+    }
+    public UHCTimerManager getUhcTimerManager() {
+        return uhcTimerManager;
+    }
 }
