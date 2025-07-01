@@ -3,6 +3,7 @@ package com.spectrasonic.Utils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -46,7 +47,7 @@ public class ItemBuilder {
 
     public ItemBuilder addEnchantment(String enchantmentName, int level) {
         String normalized = enchantmentName.toUpperCase().toLowerCase();
-        Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(normalized));
+        Enchantment enchantment = Registry.ENCHANTMENT.get(NamespacedKey.minecraft(normalized));
         if (enchantment == null) {
             throw new IllegalArgumentException("Invalid enchantment name: " + enchantmentName);
         }

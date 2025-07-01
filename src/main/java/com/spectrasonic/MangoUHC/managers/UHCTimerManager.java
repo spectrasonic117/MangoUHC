@@ -11,6 +11,7 @@ public class UHCTimerManager {
     private final Main plugin;
     private final TimerManager timerManager;
     private final UHCGameManager gameManager;
+    private final WorldBorderManager worldBorderManager;
 
     /**
      * Starts the specific timers for the UHC game.
@@ -24,10 +25,18 @@ public class UHCTimerManager {
             MessageUtils.sendBroadcastMessage("<red><b>¡PVP HA SIDO ACTIVADO!</b></red>");
         });
 
-        // 1-hour timer for PVP duration
-        int pvpDurationTime = 60 * 60; // 1 hour in seconds
-        String pvpDurationMessage = "<green><b>PVP Tiempo: </b><reset>";
-        timerManager.createTimer(pvpDurationTime, BossBar.Color.GREEN, pvpDurationMessage);
+        // Timer for world border shrink
+        int borderShrinkTime = 20 * 60; // 20 minutes in seconds
+        String borderShrinkMessage = "<blue><b>El borde se encoge en: </b><reset>";
+        timerManager.createTimer(borderShrinkTime, BossBar.Color.BLUE, borderShrinkMessage, () -> {
+            MessageUtils.sendBroadcastMessage("<blue><b>¡El borde ha comenzado a encogerse!</b></blue>");
+            worldBorderManager.setWorldBorder(300, 20 * 60); // Shrink to 150 radius over 20 minutes
+        });
+
+        // 1-hour timer for game duration
+        int gameDurationTime = 60 * 60; // 1 hour in seconds
+        String gameDurationMessage = "<green><b>Tiempo de juego: </b><reset>";
+        timerManager.createTimer(gameDurationTime, BossBar.Color.GREEN, gameDurationMessage);
     }
 
     /**

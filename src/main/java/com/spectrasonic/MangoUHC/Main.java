@@ -14,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 @Getter
 public final class Main extends JavaPlugin {
+    
     private CommandManager commandManager;
     private EventManager eventManager;
     private ConfigManager configManager;
@@ -24,20 +25,7 @@ public final class Main extends JavaPlugin {
     @Override
     public void onEnable() {
 
-        this.configManager = new ConfigManager(this);
-        this.timerManager = new TimerManager(this, MiniMessage.miniMessage());
-        this.eventManager = new EventManager(this);
-        // Create UHCGameManager first without UHCTimerManager
-        this.uhcGameManager = new UHCGameManager(this, null);
-        // Then create UHCTimerManager with UHCGameManager reference
-        this.uhcTimerManager = new UHCTimerManager(this, timerManager, uhcGameManager);
-        // Finally set the UHCTimerManager in UHCGameManager
-        uhcGameManager.setUhcTimerManager(uhcTimerManager);
-        this.commandManager = new CommandManager(this);
-
-        configManager.loadConfig();
-        commandManager.registerCommands();
-        eventManager.registerEvents();
+        initManagers();
 
         CommandUtils.setPlugin(this);
         MessageUtils.sendStartupMessage(this);
@@ -55,10 +43,18 @@ public final class Main extends JavaPlugin {
         MessageUtils.sendShutdownMessage(this);
     }
 
-    public UHCGameManager getUhcGameManager() {
-        return uhcGameManager;
+    public void initManagers() {
+        this.configManager = new ConfigManager(this);
+        this.timerManager = new TimerManager(this, MiniMessage.miniMessage());
+        this.eventManager = new EventManager(this);
+        this.uhcGameManager = new UHCGameManager(this, null);
+        this.uhcTimerManager = new UHCTimerManager(this, timerManager, uhcGameManager, uhcGameManager.getWorldBorderManager());
+        uhcGameManager.setUhcTimerManager(uhcTimerManager);
+        this.commandManager = new CommandManager(this);
+
+        configManager.loadConfig();
+        commandManager.registerCommands();
+        eventManager.registerEvents();
     }
-    public UHCTimerManager getUhcTimerManager() {
-        return uhcTimerManager;
-    }
+
 }
