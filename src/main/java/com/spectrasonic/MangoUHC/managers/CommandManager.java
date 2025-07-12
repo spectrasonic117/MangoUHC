@@ -23,7 +23,7 @@ public class CommandManager {
 
         commandManager.registerCommand(new TimerCommand(plugin));
         commandManager.registerCommand(new MangoCommand(plugin));
-        commandManager.registerCommand(new UHCCommand(plugin.getUhcGameManager()));
+        commandManager.registerCommand(new UHCCommand(plugin.getUhcGameManager(), plugin.getConfigManager()));
     }
 
     private void registerCompletions() {

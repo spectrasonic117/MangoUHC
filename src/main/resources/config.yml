@@ -1,0 +1,12 @@
+# Configuración del plugin MangoUHC
+uhc:
+    # Radio en bloques para el borde donde se colocarán los jugadores al inicio
+    border-radius: 1000
+
+    # Configuración del world border
+    world-border:
+        size: 1500
+
+    # Configuración de scatter
+    scatter:
+        max-attempts: 50

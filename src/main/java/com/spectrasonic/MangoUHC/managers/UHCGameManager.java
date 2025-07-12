@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.GameMode;
 
 import java.util.Collection;
 import java.util.Random;
@@ -25,6 +26,7 @@ import lombok.NonNull;
 public class UHCGameManager {
 
     private final Main plugin;
+    private final ConfigManager configManager;
     @Setter private UHCTimerManager uhcTimerManager;
     private final WorldBorderManager worldBorderManager = new WorldBorderManager();
     private UHCState currentState = UHCState.STOPPED;
@@ -48,7 +50,7 @@ public class UHCGameManager {
         applyGameRules(true);
         setPvP(false); // Disable PVP at the start
         scatterPlayers();
-        worldBorderManager.setWorldBorder(3000, 0); // 1500 radius
+        worldBorderManager.setWorldBorder(configManager.getWorldBorderSize(), 0);
         if (uhcTimerManager != null) {
             uhcTimerManager.startUHCTimers();
         }
@@ -123,32 +125,43 @@ public class UHCGameManager {
     private void scatterPlayers() {
         Collection<? extends Player> players = Bukkit.getOnlinePlayers();
         World world = Bukkit.getWorlds().get(0); // Assuming the first world is the main game world
-        int scatterRadius = 150;
-        Location center = world.getSpawnLocation(); // Or a specific game zone center
+        int borderRadius = configManager.getBorderRadius(); // Radio configurable desde config.yml
+        Location center = world.getSpawnLocation(); // Centro del mundo
 
+        // Filtrar solo jugadores en modo survival
         for (Player player : players) {
-            Location scatterLoc = findSafeScatterLocation(world, center, scatterRadius);
-            if (scatterLoc != null) {
-                player.teleport(scatterLoc);
-                MessageUtils.sendMessage(player, "<green>Has sido teletransportado a la zona de juego.");
-            } else {
-                MessageUtils.sendMessage(player, "<red>No se pudo encontrar una ubicación segura para teletransportarte.");
+            if (player.getGameMode() == GameMode.SURVIVAL) {
+                Location borderLoc = findBorderLocation(world, center, borderRadius);
+                if (borderLoc != null) {
+                    player.teleport(borderLoc);
+                    MessageUtils.sendMessage(player, "<green>Has sido teletransportado al borde de la zona de juego.");
+                } else {
+                    MessageUtils.sendMessage(player, "<red>No se pudo encontrar una ubicación segura en el borde para teletransportarte.");
+                }
             }
         }
     }
 
-    private Location findSafeScatterLocation(World world, Location center, int radius) {
-        for (int i = 0; i < 50; i++) { // Try finding a safe location up to 50 times
+    /**
+     * Encuentra una ubicación segura en el borde exacto del radio especificado.
+     * Coloca al jugador en el bloque más alto disponible.
+     */
+    private Location findBorderLocation(World world, Location center, int radius) {
+        int maxAttempts = configManager.getScatterMaxAttempts(); // Número configurable de intentos
+        for (int i = 0; i < maxAttempts; i++) { // Intentar encontrar una ubicación segura
+            // Generar un ángulo aleatorio para distribuir jugadores alrededor del borde
             double angle = random.nextDouble() * 2 * Math.PI;
-            double distance = random.nextDouble() * radius;
-
-            int x = (int) (center.getX() + distance * Math.cos(angle));
-            int z = (int) (center.getZ() + distance * Math.sin(angle));
+            
+            // Calcular coordenadas exactamente en el borde (distancia = radio)
+            int x = (int) (center.getX() + radius * Math.cos(angle));
+            int z = (int) (center.getZ() + radius * Math.sin(angle));
+            
+            // Obtener el bloque más alto en esas coordenadas
             int y = world.getHighestBlockYAt(x, z);
 
-            Location potentialLoc = new Location(world, x + 0.5, y + 1, z + 0.5); // +0.5 to center in block, +1 to be above block
+            Location potentialLoc = new Location(world, x + 0.5, y + 1, z + 0.5); // +0.5 para centrar en el bloque, +1 para estar encima
 
-            // Check if the location is safe (e.g., not inside a block)
+            // Verificar si la ubicación es segura (no dentro de un bloque)
             Block blockBelow = potentialLoc.getBlock().getRelative(BlockFace.DOWN);
             Block blockAt = potentialLoc.getBlock();
             Block blockAbove = potentialLoc.getBlock().getRelative(BlockFace.UP);
@@ -157,6 +170,6 @@ public class UHCGameManager {
                 return potentialLoc;
             }
         }
-        return null; // Could not find a safe location
+        return null; // No se pudo encontrar una ubicación segura
     }
 }
