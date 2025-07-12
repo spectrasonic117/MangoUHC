@@ -50,6 +50,7 @@ public final class Main extends JavaPlugin {
         this.uhcGameManager = new UHCGameManager(this, configManager);
         this.uhcTimerManager = new UHCTimerManager(this, timerManager, uhcGameManager, uhcGameManager.getWorldBorderManager());
         uhcGameManager.setUhcTimerManager(uhcTimerManager);
+        uhcGameManager.initializeWinConditionManager();
         this.commandManager = new CommandManager(this);
 
         configManager.loadConfig();

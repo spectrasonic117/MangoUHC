@@ -29,11 +29,23 @@ public class UHCGameManager {
     private final ConfigManager configManager;
     @Setter private UHCTimerManager uhcTimerManager;
     private final WorldBorderManager worldBorderManager = new WorldBorderManager();
+    private WinConditionManager winConditionManager;
     private UHCState currentState = UHCState.STOPPED;
     private final Random random = new Random();
     
     public WorldBorderManager getWorldBorderManager() {
         return worldBorderManager;
+    }
+
+    /**
+     * Inicializa el WinConditionManager
+     */
+    public void initializeWinConditionManager() {
+        this.winConditionManager = new WinConditionManager(plugin);
+    }
+
+    public WinConditionManager getWinConditionManager() {
+        return winConditionManager;
     }
 
     public void toggleUHCState() {
@@ -53,6 +65,10 @@ public class UHCGameManager {
         worldBorderManager.setWorldBorder(configManager.getWorldBorderSize(), 0);
         if (uhcTimerManager != null) {
             uhcTimerManager.startUHCTimers();
+        }
+        // Reiniciar el WinConditionManager para el nuevo juego
+        if (winConditionManager != null) {
+            winConditionManager.reset();
         }
     }
 
@@ -171,5 +187,37 @@ public class UHCGameManager {
             }
         }
         return null; // No se pudo encontrar una ubicación segura
+    }
+
+    /**
+     * Termina el UHC con un ganador específico
+     */
+    public void endUHCWithWinner(Player winner) {
+        currentState = UHCState.STOPPED;
+        MessageUtils.sendBroadcastMessage("<gold>¡" + winner.getName() + " ha ganado el UHC!</gold>");
+        applyGameRules(false);
+        setPvP(true);
+        if (uhcTimerManager != null) {
+            uhcTimerManager.stopUHCTimers();
+        }
+        worldBorderManager.resetWorldBorder();
+        
+        // Los gamemodes serán manejados manualmente por el admin
+    }
+
+    /**
+     * Termina el UHC sin ganador (empate)
+     */
+    public void endUHCWithoutWinner() {
+        currentState = UHCState.STOPPED;
+        MessageUtils.sendBroadcastMessage("<red>El UHC ha terminado sin ganador!</red>");
+        applyGameRules(false);
+        setPvP(true);
+        if (uhcTimerManager != null) {
+            uhcTimerManager.stopUHCTimers();
+        }
+        worldBorderManager.resetWorldBorder();
+        
+        // Los gamemodes serán manejados manualmente por el admin
     }
 }
