@@ -301,6 +301,46 @@ public class TimerManager {
     }
 
     /**
+     * Muestra todos los timers activos a un jugador específico y envía un mensaje informativo
+     * @param player Jugador al que mostrar los timers
+     * @return true si se mostraron timers, false si no hay timers activos
+     */
+    public boolean showTimersToPlayer(Player player) {
+        if (player == null) {
+            return false;
+        }
+
+        if (timers.isEmpty()) {
+            return false;
+        }
+
+        // Mostrar todos los timers activos al jugador
+        for (TimerData timer : timers.values()) {
+            player.showBossBar(timer.getBossBar());
+        }
+
+        return true;
+    }
+
+    /**
+     * Obtiene información detallada de todos los timers activos
+     * @return Lista con información de los timers
+     */
+    public List<String> getTimerInfo() {
+        List<String> info = new ArrayList<>();
+        
+        for (TimerData timer : timers.values()) {
+            String status = timer.getIsPaused().get() ? "Pausado" : "Activo";
+            int remaining = timer.getRemainingSeconds().get();
+            String timeLeft = formatTime(remaining);
+            
+            info.add("ID: " + timer.getId() + " | Estado: " + status + " | Tiempo restante: " + timeLeft + " | Mensaje: " + timer.getMessage());
+        }
+        
+        return info;
+    }
+
+    /**
      * Inicia la tarea del timer
      * @param timerId ID del timer
      * @param bossBar BossBar asociado al timer

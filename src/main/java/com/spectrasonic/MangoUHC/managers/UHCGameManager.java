@@ -25,7 +25,7 @@ import lombok.NonNull;
 public class UHCGameManager {
 
     private final Main plugin;
-    @NonNull @Setter private UHCTimerManager uhcTimerManager;
+    @Setter private UHCTimerManager uhcTimerManager;
     private final WorldBorderManager worldBorderManager = new WorldBorderManager();
     private UHCState currentState = UHCState.STOPPED;
     private final Random random = new Random();
@@ -49,7 +49,9 @@ public class UHCGameManager {
         setPvP(false); // Disable PVP at the start
         scatterPlayers();
         worldBorderManager.setWorldBorder(3000, 0); // 1500 radius
-        uhcTimerManager.startUHCTimers();
+        if (uhcTimerManager != null) {
+            uhcTimerManager.startUHCTimers();
+        }
     }
 
     private void startingUHC() {
@@ -75,7 +77,9 @@ public class UHCGameManager {
         MessageUtils.sendBroadcastMessage("<red>El UHC ha terminado!");
         applyGameRules(false);
         setPvP(true); // Enable PVP when stopped (or set to default)
-        uhcTimerManager.stopUHCTimers();
+        if (uhcTimerManager != null) {
+            uhcTimerManager.stopUHCTimers();
+        }
         worldBorderManager.resetWorldBorder();
         // Optionally, handle players after stopping, e.g., teleport back to spawn
     }

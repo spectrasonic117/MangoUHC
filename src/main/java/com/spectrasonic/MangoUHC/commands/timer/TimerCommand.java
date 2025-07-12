@@ -6,6 +6,8 @@ import com.spectrasonic.MangoUHC.Main;
 import com.spectrasonic.MangoUHC.utils.TimeParser;
 import net.kyori.adventure.bossbar.BossBar;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
 import com.spectrasonic.Utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 
@@ -183,6 +185,63 @@ public class TimerCommand extends BaseCommand {
         int count = timerIds.size();
         plugin.getTimerManager().stopAllTimers();
         MessageUtils.sendMessage(sender, "<green>Se detuvieron " + count + " timers!");
+    }
+
+    /**
+     * Shows all active timers to a specific player
+     * Usage: /timer show [player]
+     */
+    @Subcommand("show")
+    @CommandPermission("mangouhc.timer.show")
+    @Syntax("[player]")
+    @Description("Shows all active timers to a specific player or yourself")
+    @CommandCompletion("@players")
+    public void onShowTimers(CommandSender sender, @Optional String playerName) {
+        Player targetPlayer;
+        
+        // Si no se especifica jugador y el sender es un jugador, mostrar a si mismo
+        if (playerName == null) {
+            if (!(sender instanceof Player)) {
+                MessageUtils.sendMessage(sender, "<red>Debes especificar un jugador cuando ejecutas desde consola!");
+                return;
+            }
+            targetPlayer = (Player) sender;
+        } else {
+            // Buscar el jugador especificado
+            targetPlayer = Bukkit.getPlayer(playerName);
+            if (targetPlayer == null) {
+                MessageUtils.sendMessage(sender, "<red>Jugador no encontrado: <gold>" + playerName);
+                return;
+            }
+        }
+        
+        // Verificar si hay timers activos
+        if (!plugin.getTimerManager().hasActiveTimers()) {
+            MessageUtils.sendMessage(sender, "<red>No hay timers activos para mostrar!");
+            return;
+        }
+        
+        // Mostrar los timers al jugador
+        boolean success = plugin.getTimerManager().showTimersToPlayer(targetPlayer);
+        
+        if (success) {
+            List<String> timerInfo = plugin.getTimerManager().getTimerInfo();
+            
+            if (targetPlayer.equals(sender)) {
+                MessageUtils.sendMessage(sender, "<green>Se te han mostrado todos los timers activos (" + timerInfo.size() + "):");
+            } else {
+                MessageUtils.sendMessage(sender, "<green>Se han mostrado todos los timers activos a <gold>" + targetPlayer.getName() + " <green>(" + timerInfo.size() + "):");
+                MessageUtils.sendMessage(targetPlayer, "<green>Un administrador te ha mostrado todos los timers activos:");
+            }
+            
+            // Mostrar información detallada de los timers al sender
+            for (String info : timerInfo) {
+                MessageUtils.sendMessage(sender, "<gray>- " + info);
+            }
+            
+        } else {
+            MessageUtils.sendMessage(sender, "<red>No se pudieron mostrar los timers al jugador!");
+        }
     }
 
 }
