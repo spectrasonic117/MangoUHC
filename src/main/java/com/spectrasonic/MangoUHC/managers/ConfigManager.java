@@ -52,4 +52,29 @@ public class ConfigManager {
     public int getScatterMaxAttempts() {
         return config.getInt("uhc.scatter.max-attempts", 50);
     }
+
+    /**
+     * Obtiene el estado del PvP desde la configuracion
+     * @return true si el PvP esta habilitado, false en caso contrario
+     */
+    public boolean isPvPEnabled() {
+        return config.getBoolean("uhc.pvp.enabled", false);
+    }
+
+    /**
+     * Establece el estado del PvP en la configuracion
+     * @param enabled true para habilitar PvP, false para deshabilitar
+     */
+    public void setPvPEnabled(boolean enabled) {
+        config.set("uhc.pvp.enabled", enabled);
+        saveConfig();
+    }
+
+    /**
+     * Obtiene la probabilidad de drop de manzanas desde las hojas
+     * @return probabilidad entre 0.0 y 1.0
+     */
+    public double getAppleDropChance() {
+        return config.getDouble("uhc.drops.apple-drop-chance", 0.25);
+    }
 }

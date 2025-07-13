@@ -60,7 +60,7 @@ public class UHCGameManager {
         currentState = UHCState.RUNNING;
         MessageUtils.sendBroadcastMessage("<green>El UHC ha comenzado!");
         applyGameRules(true);
-        setPvP(false); // Disable PVP at the start
+        setPvP(configManager.isPvPEnabled()); // Set PVP based on config
         scatterPlayers();
         worldBorderManager.setWorldBorder(configManager.getWorldBorderSize(), 0);
         if (uhcTimerManager != null) {
@@ -94,7 +94,7 @@ public class UHCGameManager {
         currentState = UHCState.STOPPED;
         MessageUtils.sendBroadcastMessage("<red>El UHC ha terminado!");
         applyGameRules(false);
-        setPvP(true); // Enable PVP when stopped (or set to default)
+        setPvP(configManager.isPvPEnabled()); // Set PVP based on config when stopped
         if (uhcTimerManager != null) {
             uhcTimerManager.stopUHCTimers();
         }
@@ -196,7 +196,7 @@ public class UHCGameManager {
         currentState = UHCState.STOPPED;
         MessageUtils.sendBroadcastMessage("<gold>¡" + winner.getName() + " ha ganado el UHC!</gold>");
         applyGameRules(false);
-        setPvP(true);
+        setPvP(configManager.isPvPEnabled());
         if (uhcTimerManager != null) {
             uhcTimerManager.stopUHCTimers();
         }
@@ -212,7 +212,7 @@ public class UHCGameManager {
         currentState = UHCState.STOPPED;
         MessageUtils.sendBroadcastMessage("<red>El UHC ha terminado sin ganador!</red>");
         applyGameRules(false);
-        setPvP(true);
+        setPvP(configManager.isPvPEnabled());
         if (uhcTimerManager != null) {
             uhcTimerManager.stopUHCTimers();
         }

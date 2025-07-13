@@ -3,6 +3,7 @@ package com.spectrasonic.MangoUHC.managers;
 import co.aikar.commands.PaperCommandManager;
 import com.spectrasonic.MangoUHC.Main;
 import com.spectrasonic.MangoUHC.commands.MangoCommand;
+import com.spectrasonic.MangoUHC.commands.PvPCommand;
 import com.spectrasonic.MangoUHC.commands.UHCCommand;
 import com.spectrasonic.MangoUHC.commands.timer.TimerCommand;
 
@@ -24,6 +25,7 @@ public class CommandManager {
         commandManager.registerCommand(new TimerCommand(plugin));
         commandManager.registerCommand(new MangoCommand(plugin));
         commandManager.registerCommand(new UHCCommand(plugin.getUhcGameManager(), plugin.getConfigManager()));
+        commandManager.registerCommand(new PvPCommand(plugin.getUhcGameManager(), plugin.getConfigManager()));
     }
 
     private void registerCompletions() {
@@ -39,9 +41,14 @@ public class CommandManager {
             "10s", "30s", "1m", "5m", "10m", "30m", "1h", "2h", "1h30m", "1h30m15s"
         );
 
+        List<String> pvpStates = Arrays.asList(
+            "true", "false"
+        );
+
         commandManager.getCommandCompletions().registerStaticCompletion("bossbar-colors", colors);
         commandManager.getCommandCompletions().registerStaticCompletion("timer-actions", actions);
         commandManager.getCommandCompletions().registerStaticCompletion("time-examples", timeExamples);
+        commandManager.getCommandCompletions().registerStaticCompletion("pvp-states", pvpStates);
         
         // Registro de completado dinámico para IDs de timers activos
         commandManager.getCommandCompletions().registerAsyncCompletion("timers", context -> {

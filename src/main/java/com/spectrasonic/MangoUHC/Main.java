@@ -6,6 +6,7 @@ import com.spectrasonic.MangoUHC.managers.EventManager;
 import com.spectrasonic.MangoUHC.managers.TimerManager;
 import com.spectrasonic.MangoUHC.managers.UHCGameManager;
 import com.spectrasonic.MangoUHC.managers.UHCTimerManager;
+import com.spectrasonic.MangoUHC.recipes.GoldenAppleRecipe;
 import com.spectrasonic.Utils.CommandUtils;
 import com.spectrasonic.Utils.MessageUtils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -56,6 +57,9 @@ public final class Main extends JavaPlugin {
         configManager.loadConfig();
         commandManager.registerCommands();
         eventManager.registerEvents();
+        
+        // Registrar recetas personalizadas
+        GoldenAppleRecipe.registerGoldenAppleRecipe(this);
     }
 
 }

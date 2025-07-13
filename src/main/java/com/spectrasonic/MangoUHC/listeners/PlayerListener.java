@@ -2,6 +2,7 @@ package com.spectrasonic.MangoUHC.listeners;
 
 import com.spectrasonic.MangoUHC.Main;
 import com.spectrasonic.MangoUHC.enums.UHCState;
+import com.spectrasonic.MangoUHC.utils.DeathMonumentManager;
 import com.spectrasonic.Utils.MessageUtils;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
@@ -52,6 +53,9 @@ public class PlayerListener implements Listener {
         
         // Verificar si el UHC esta en estado RUNNING
         if (plugin.getUhcGameManager().getCurrentState() == UHCState.RUNNING) {
+            // Crear monumento de muerte en la ubicacion donde murio
+            DeathMonumentManager.createDeathMonument(player, player.getLocation());
+            
             // Cambiar al jugador a modo espectador
             player.setGameMode(GameMode.SPECTATOR);
             

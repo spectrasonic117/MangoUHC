@@ -8,10 +8,18 @@ commands:
         permission: mangouhc.mango
     timer:
         permission: timer.use
+    pvp:
+        permission: mangouhc.command.pvp
 
 permissions:
     mangouhc.mango:
         default: true
+    mangouhc.command.pvp:
+        default: op
+    mangouhc.command.uhc:
+        default: op
+    mangouhc.command.uhc.reload:
+        default: op
     mangouhc.timer.*:
         children:
             mangouhc.timer.create:

@@ -1,12 +1,21 @@
-# Configuración del plugin MangoUHC
+# Configuracion del plugin MangoUHC
 uhc:
-    # Radio en bloques para el borde donde se colocarán los jugadores al inicio
+    # Radio en bloques para el borde donde se colocaran los jugadores al inicio
     border-radius: 1000
 
-    # Configuración del world border
+    # Configuracion del world border
     world-border:
         size: 1500
 
-    # Configuración de scatter
+    # Configuracion de scatter
     scatter:
         max-attempts: 50
+
+    # Configuracion de PvP
+    pvp:
+        enabled: false
+
+    # Configuracion de drops
+    drops:
+        # Probabilidad de que las hojas dropeen manzanas (0.0 = 0%, 1.0 = 100%)
+        apple-drop-chance: 0.25
