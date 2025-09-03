@@ -9,6 +9,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import lombok.RequiredArgsConstructor;
 
+@SuppressWarnings("unused")
 @RequiredArgsConstructor
 public class UHCTimerManager {
 
@@ -51,7 +52,8 @@ public class UHCTimerManager {
      */
     public void stopUHCTimers() {
         // If specific timer IDs were used, we could stop them here.
-        // Since createTimer generates random IDs, stopping all timers is the simplest approach
+        // Since createTimer generates random IDs, stopping all timers is the simplest
+        // approach
         // based on the current TimerManager implementation.
         // If more fine-grained control is needed, we would need to store the timer IDs
         // created in startUHCTimers.
@@ -67,11 +69,11 @@ public class UHCTimerManager {
                 // Curar vida completa
                 double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
                 player.setHealth(maxHealth);
-                
+
                 // Curar hambre completa
                 player.setFoodLevel(20);
                 player.setSaturation(20.0f);
-                
+
                 // Remover efectos negativos (opcional)
                 player.getActivePotionEffects().forEach(effect -> {
                     switch (effect.getType().getName().toLowerCase()) {
@@ -87,7 +89,7 @@ public class UHCTimerManager {
                             break;
                     }
                 });
-                
+
                 MessageUtils.sendMessage(player, "<green>¡Has sido curado completamente!</green>");
             }
         }

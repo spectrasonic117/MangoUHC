@@ -2,6 +2,7 @@ package com.spectrasonic.MangoUHC.managers;
 
 import co.aikar.commands.PaperCommandManager;
 import com.spectrasonic.MangoUHC.Main;
+import com.spectrasonic.MangoUHC.commands.CageCommand;
 import com.spectrasonic.MangoUHC.commands.MangoCommand;
 import com.spectrasonic.MangoUHC.commands.PvPCommand;
 import com.spectrasonic.MangoUHC.commands.UHCCommand;
@@ -26,6 +27,7 @@ public class CommandManager {
         commandManager.registerCommand(new MangoCommand(plugin));
         commandManager.registerCommand(new UHCCommand(plugin.getUhcGameManager(), plugin.getConfigManager()));
         commandManager.registerCommand(new PvPCommand(plugin.getUhcGameManager(), plugin.getConfigManager()));
+        commandManager.registerCommand(new CageCommand(plugin));
     }
 
     private void registerCompletions() {

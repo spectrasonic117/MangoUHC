@@ -19,7 +19,6 @@ import java.util.Random;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.RequiredArgsConstructor;
-import lombok.NonNull;
 
 @Getter
 @RequiredArgsConstructor
@@ -27,12 +26,13 @@ public class UHCGameManager {
 
     private final Main plugin;
     private final ConfigManager configManager;
-    @Setter private UHCTimerManager uhcTimerManager;
+    @Setter
+    private UHCTimerManager uhcTimerManager;
     private final WorldBorderManager worldBorderManager = new WorldBorderManager();
     private WinConditionManager winConditionManager;
     private UHCState currentState = UHCState.STOPPED;
     private final Random random = new Random();
-    
+
     public WorldBorderManager getWorldBorderManager() {
         return worldBorderManager;
     }
@@ -82,7 +82,8 @@ public class UHCGameManager {
                 MessageUtils.broadcastTitle("<gold>" + count + "</gold>", "", 1, 2, 1);
             }, 20L * (15 - count));
         }
-        // After countdown, broadcast "¡COMIENZA!", play dragon growl sound, and start the game
+        // After countdown, broadcast "¡COMIENZA!", play dragon growl sound, and start
+        // the game
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             MessageUtils.broadcastTitle("<green><b>¡COMIENZA</b>!</green>", "", 1, 3, 1);
             SoundUtils.broadcastPlayerSound(Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.0f);
@@ -115,7 +116,7 @@ public class UHCGameManager {
             world.setGameRule(GameRule.FALL_DAMAGE, fallDamage);
             world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, daylightCycle);
             world.setGameRule(GameRule.DO_MOB_SPAWNING, mobSpawning);
-            if(isRunning) {
+            if (isRunning) {
                 world.setTime(0);
             } else {
                 world.setTime(6000);
@@ -126,6 +127,7 @@ public class UHCGameManager {
 
     /**
      * Sets the PVP game rule for all worlds.
+     * 
      * @param enabled true to enable PVP, false to disable
      */
     @SuppressWarnings("unchecked")
@@ -152,7 +154,8 @@ public class UHCGameManager {
                     player.teleport(borderLoc);
                     MessageUtils.sendMessage(player, "<green>Has sido teletransportado al borde de la zona de juego.");
                 } else {
-                    MessageUtils.sendMessage(player, "<red>No se pudo encontrar una ubicación segura en el borde para teletransportarte.");
+                    MessageUtils.sendMessage(player,
+                            "<red>No se pudo encontrar una ubicación segura en el borde para teletransportarte.");
                 }
             }
         }
@@ -167,15 +170,16 @@ public class UHCGameManager {
         for (int i = 0; i < maxAttempts; i++) { // Intentar encontrar una ubicación segura
             // Generar un ángulo aleatorio para distribuir jugadores alrededor del borde
             double angle = random.nextDouble() * 2 * Math.PI;
-            
+
             // Calcular coordenadas exactamente en el borde (distancia = radio)
             int x = (int) (center.getX() + radius * Math.cos(angle));
             int z = (int) (center.getZ() + radius * Math.sin(angle));
-            
+
             // Obtener el bloque más alto en esas coordenadas
             int y = world.getHighestBlockYAt(x, z);
 
-            Location potentialLoc = new Location(world, x + 0.5, y + 1, z + 0.5); // +0.5 para centrar en el bloque, +1 para estar encima
+            Location potentialLoc = new Location(world, x + 0.5, y + 1, z + 0.5); // +0.5 para centrar en el bloque, +1
+                                                                                  // para estar encima
 
             // Verificar si la ubicación es segura (no dentro de un bloque)
             Block blockBelow = potentialLoc.getBlock().getRelative(BlockFace.DOWN);
@@ -201,7 +205,7 @@ public class UHCGameManager {
             uhcTimerManager.stopUHCTimers();
         }
         worldBorderManager.resetWorldBorder();
-        
+
         // Los gamemodes serán manejados manualmente por el admin
     }
 
@@ -217,7 +221,7 @@ public class UHCGameManager {
             uhcTimerManager.stopUHCTimers();
         }
         worldBorderManager.resetWorldBorder();
-        
+
         // Los gamemodes serán manejados manualmente por el admin
     }
 }

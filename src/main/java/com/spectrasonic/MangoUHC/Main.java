@@ -1,5 +1,6 @@
 package com.spectrasonic.MangoUHC;
 
+import com.spectrasonic.MangoUHC.managers.CageManager;
 import com.spectrasonic.MangoUHC.managers.CommandManager;
 import com.spectrasonic.MangoUHC.managers.ConfigManager;
 import com.spectrasonic.MangoUHC.managers.EventManager;
@@ -22,6 +23,7 @@ public final class Main extends JavaPlugin {
     private TimerManager timerManager;
     private UHCGameManager uhcGameManager;
     private UHCTimerManager uhcTimerManager;
+    private CageManager cageManager;
 
     @Override
     public void onEnable() {
@@ -52,11 +54,15 @@ public final class Main extends JavaPlugin {
         this.uhcTimerManager = new UHCTimerManager(this, timerManager, uhcGameManager, uhcGameManager.getWorldBorderManager());
         uhcGameManager.setUhcTimerManager(uhcTimerManager);
         uhcGameManager.initializeWinConditionManager();
+        this.cageManager = new CageManager(this);
         this.commandManager = new CommandManager(this);
 
         configManager.loadConfig();
         commandManager.registerCommands();
         eventManager.registerEvents();
+        
+        // Load the cage schematic during initialization
+        cageManager.loadCageSchematic();
         
         // Registrar recetas personalizadas
         GoldenAppleRecipe.registerGoldenAppleRecipe(this);
