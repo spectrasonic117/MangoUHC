@@ -14,7 +14,7 @@ public final class MessageUtils {
 
     private static final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(MessageUtils.class);
     public static final String DIVIDER = "<gray>----------------------------------------</gray>";
-    public static final String PREFIX = "<dark_ray>[<gradient:#f75300:#ffff60>" + plugin.getPluginMeta().getName()
+    public static final String PREFIX = "<dark_gray>[<gradient:#f75300:#ffff60>" + plugin.getPluginMeta().getName()
             + "</gradient>]</dark_gray> <gold>»</gold> ";
 
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
