@@ -3,6 +3,8 @@ version: "${version}"
 main: com.spectrasonic.MangoUHC.Main
 api-version: "1.21"
 authors: [Spectrasonic]
+depends: [FastAsyncWorldEdit]
+
 commands:
     mango:
         permission: mangouhc.mango

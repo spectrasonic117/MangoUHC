@@ -5,7 +5,7 @@
 
         <groupId>com.spectrasonic</groupId>
         <artifactId>MangoUHC</artifactId>
-        <version>1.0.5</version>
+        <version>1.0.6</version>
         <packaging>jar</packaging>
 
         <properties>
@@ -93,6 +93,7 @@
                 <version>${adventure.version}</version>
             </dependency>
 
+            <!-- FastAsyncWorldEdit -->
             <dependency>
                 <groupId>com.fastasyncworldedit</groupId>
                 <artifactId>FastAsyncWorldEdit-Core</artifactId>
